@@ -3,7 +3,7 @@
 require_relative 'lib/rubidium/version'
 
 Gem::Specification.new do |spec|
-  spec.name    = 'rubidium'
+  spec.name    = 'rubidium_physics'  # 'rubidium' is taken on rubygems.org
   spec.version = Rubidium::VERSION
   spec.authors = ['FlyMilk1']
   spec.email   = ['j.yontcheff@gmail.com']

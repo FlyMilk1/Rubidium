@@ -15,29 +15,32 @@ spatial hashmap for broad-phase collision detection. No runtime dependencies.
 
 ## Installation
 
+> **Note:** the gem is published as `rubidium_physics` because `rubidium` is taken on rubygems.org.
+> The require path stays `rubidium` (namespace `Rubidium`) — use `require 'rubidium'` or `require 'rubidium_physics'`; both work.
+
 ### From a local path (development)
 
 ```ruby
 # Gemfile
-gem 'rubidium', path: '../Rubidium'
+gem 'rubidium_physics', path: '../Rubidium'
 ```
 
 ### From git
 
 ```ruby
 # Gemfile
-gem 'rubidium', git: 'https://github.com/you/rubidium.git'
+gem 'rubidium_physics', git: 'https://github.com/FlyMilk1/Rubidium.git'
 ```
 
 ### From rubygems.org (once published)
 
 ```bash
-gem install rubidium
+gem install rubidium_physics
 ```
 
 ```ruby
 # Gemfile
-gem 'rubidium'
+gem 'rubidium_physics'
 ```
 
 ## Usage

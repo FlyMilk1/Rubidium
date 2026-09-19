@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed the gem to `rubidium_physics` (plain `rubidium` is taken on rubygems.org); the require path and `Rubidium` namespace are unchanged (`require 'rubidium'` and `require 'rubidium_physics'` both work).
+
 ## [0.1.1] - 2026-09-19
 
 ### Fixed
