@@ -48,10 +48,14 @@ module Rubidium
       elsif (collider.respond_to?(:radius) && other.collider.respond_to?(:width)) || (collider.respond_to?(:width) && other.collider.respond_to?(:radius))
         circle = collider.respond_to?(:radius) ? collider : other.collider
         rect = collider.respond_to?(:width) ? collider : other.collider
-        closest_x = [[position.x, rect.width / 2].min, -rect.width / 2].max
-        closest_y = [[position.y, rect.height / 2].min, -rect.height / 2].max
-        distance_x = position.x - closest_x
-        distance_y = position.y - closest_y
+        circle_pos = circle.equal?(collider) ? position : other.position
+        rect_pos = rect.equal?(collider) ? position : other.position
+        dx = circle_pos.x - rect_pos.x
+        dy = circle_pos.y - rect_pos.y
+        closest_x = [[dx, rect.width / 2].min, -rect.width / 2].max
+        closest_y = [[dy, rect.height / 2].min, -rect.height / 2].max
+        distance_x = dx - closest_x
+        distance_y = dy - closest_y
         distance_squared = distance_x**2 + distance_y**2
         return distance_squared < (circle.radius**2)
       elsif collider.respond_to?(:width) && other.collider.respond_to?(:width)
@@ -65,10 +69,10 @@ module Rubidium
     def get_collided_objects(spatial_hashmap)
       candidates = spatial_hashmap.get_broad_collided_objects(self)
       if candidates.any?
-        puts "Broad collision detected for #{object_id}: #{candidates.map(&:object_id).join(', ')}"
+        puts "Broad collision detected for #{object_id}: #{candidates.to_a.map(&:object_id).join(', ')}"
       end
 
-      narrow = candidates.select { |obj| narrow_collision_check(obj) }
+      narrow = candidates.to_a.select { |obj| narrow_collision_check(obj) }
       if narrow.any?
         puts "Narrow collision detected for #{object_id}: #{narrow.map(&:object_id).join(', ')}"
       end

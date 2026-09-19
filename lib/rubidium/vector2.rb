@@ -107,6 +107,7 @@ module Rubidium
           @x -= v.x
           @y -= v.y
         end
+        return
       end
       @x -= other.x
       @y -= other.y
@@ -125,6 +126,7 @@ module Rubidium
           @x *= v.x
           @y *= v.y
         end
+        return
       end
       @x *= other.x
       @y *= other.y
@@ -143,6 +145,7 @@ module Rubidium
           @x /= v.x
           @y /= v.y
         end
+        return
       end
       @x /= other.x
       @y /= other.y
