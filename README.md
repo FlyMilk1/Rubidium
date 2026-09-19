@@ -1,68 +1,79 @@
-# YordanPhysics2D
+# Rubidium
 
-A Ruby library for 2D vector operations and physics calculations.
+A pure-Ruby 2D physics library: vectors, rigid bodies, colliders, and a
+spatial hashmap for broad-phase collision detection. No runtime dependencies.
 
-## Overview
+## What's inside
 
-**Vector2** is a 2D vector class that provides comprehensive vector arithmetic operations. It supports both vector-to-vector operations and scalar operations, with both immutable (returning new instances) and mutable (in-place modification) methods.
-
-## Features
-
-- **Arithmetic Operations**: Addition, subtraction, multiplication, and division
-- **Scalar Operations**: Apply scalar values to vector components
-- **Collection Support**: Apply vector operations to multiple vectors at once
-- **Immutable & Mutable Methods**: Choose between creating new vectors or modifying in-place
-
-## Usage
-
-### Basic Vector Operations
-
-```ruby
-require './PhysicsTypes/vector2'
-
-v1 = Vector2.new(3, 4)
-v2 = Vector2.new(1, 2)
-
-# Immutable operations (return new Vector2)
-sum = v1 + v2          # Vector2(4, 6)
-diff = v1 - v2         # Vector2(2, 2)
-product = v1 * v2      # Vector2(3, 8)
-quotient = v1 / v2     # Vector2(3, 2)
-
-puts v1                 # Vector2(3, 4)
-puts v1.to_s            # Vector2(3, 4)
-```
-
-### Mutable Operations
-
-```ruby
-v = Vector2.new(5, 10)
-
-# Modify vector in-place
-v.add_with_scalar(2)           # v is now (7, 12)
-v.multiply_with_scalar(2)      # v is now (14, 24)
-v.subtract_with_scalar(4)      # v is now (10, 20)
-v.divide_with_scalar(2)        # v is now (5, 10)
-```
-
-### Vector Collection Operations
-
-```ruby
-v = Vector2.new(10, 10)
-vectors = [Vector2.new(1, 1), Vector2.new(2, 2)]
-
-v.add(vectors)                 # Add all vectors in collection to v
-v.subtract(vectors)            # Subtract all vectors from v
-v.multiply(vectors)            # Multiply v by all vectors
-v.divide(vectors)              # Divide v by all vectors
-```
+- `Rubidium::Vector2` — 2D vector arithmetic (immutable `+`, `-`, `*`, `/` and
+  in-place `add`, `subtract`, `multiply`, `divide`, plus `*_with_scalar`)
+- `Rubidium::RigidBody2d` — position, velocity, acceleration, rotation,
+  angular velocity, drag, linear forces, and `update(time_step)` integration
+- `Rubidium::Collision::CircleCollider` / `Rubidium::Collision::RectangleCollider`
+- `Rubidium::SpatialHashmap` — broad-phase collision lookup by grid cell
+- `Rubidium::HashSet` — minimal hash-backed set used internally
 
 ## Installation
 
-1. Clone the repository
-2. Include the Vector2 class in your Ruby project
+### From a local path (development)
+
+```ruby
+# Gemfile
+gem 'rubidium', path: '../Rubidium'
+```
+
+### From git
+
+```ruby
+# Gemfile
+gem 'rubidium', git: 'https://github.com/you/rubidium.git'
+```
+
+### From rubygems.org (once published)
+
+```bash
+gem install rubidium
+```
+
+```ruby
+# Gemfile
+gem 'rubidium'
+```
+
+## Usage
+
+```ruby
+require 'rubidium'
+
+# A static ground rectangle
+ground = Rubidium::RigidBody2d.new(Float::INFINITY, Rubidium::Vector2.new(0, 0), 0.0, 0.0, true)
+ground.collider = Rubidium::Collision::RectangleCollider.new(20, 1)
+
+# A ball overlapping the ground, pushed downward by a force
+ball = Rubidium::RigidBody2d.new(1.0, Rubidium::Vector2.new(0, 0.4), 0.0)
+ball.collider = Rubidium::Collision::CircleCollider.new(0.5)
+ball.add_linear_force(Rubidium::Vector2.new(0, -9.8))
+
+# Broad-phase spatial hash
+grid = Rubidium::SpatialHashmap.new(1.0)
+grid.build_hashmap([ground, ball])
+
+# Integrate one time step
+ball.update(1.0 / 60.0)
+
+# Broad phase (grid cells) then narrow phase (per-collider check)
+candidates = grid.get_broad_collided_objects(ball)
+colliding = candidates.to_a.select { |other| ball.narrow_collision_check(other) }
+puts "colliding with #{colliding.size} object(s)"
+```
+
+## Development
+
+```bash
+bundle install
+bundle exec rspec
+```
 
 ## License
 
-MIT
-
+MIT — see [LICENSE](LICENSE).

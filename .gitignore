@@ -22,3 +22,7 @@ Thumbs.db
 .env.local
 
 /main.rb
+
+# Gem build
+pkg/
+/coverage/
