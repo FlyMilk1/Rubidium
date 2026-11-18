@@ -19,9 +19,13 @@ module Rubidium
     def self.serialize_scene(scene)
       case scene
       when Scene2D
+        serialized_bodies = {}
+        scene.rigid_bodies.each do |id, body|
+          serialized_bodies[id.to_s] = serialize_rigid_body_2d(body)
+        end
         {
           'type' => 'Scene2D',
-          'rigid_bodies' => scene.rigid_bodies.map { |body| serialize_rigid_body_2d(body) }
+          'rigid_bodies' => serialized_bodies
         }
       else
         raise ArgumentError, "Unsupported scene type: #{scene.class}"

@@ -142,19 +142,34 @@ RSpec.describe Rubidium::SpatialHashmap do
 end
 
 RSpec.describe Rubidium::Scene2D do
-  it 'initializes with an empty rigid_bodies list by default' do
+  it 'initializes with an empty rigid_bodies dictionary by default' do
     scene = described_class.new
-    expect(scene.rigid_bodies).to eq([])
+    expect(scene.rigid_bodies).to eq({})
   end
 
-  it 'calls update on every rigid body in update / Update' do
+  it 'creates and retrieves rigid bodies by ID with create_rigidbody and get_rigidbody' do
+    scene = described_class.new
+    b1 = Rubidium::RigidBody2d.new(1.0, Rubidium::Vector2.new(0, 0), 0.0)
+    b2 = Rubidium::RigidBody2d.new(2.0, Rubidium::Vector2.new(3, 4), 0.5)
+
+    id1 = scene.create_rigidbody(b1)
+    id2 = scene.create_rigidbody(b2)
+
+    expect(id1).not_to eq(id2)
+    expect(scene.rigid_bodies).to eq({ id1 => b1, id2 => b2 })
+    expect(scene.get_rigidbody(id1)).to equal(b1)
+    expect(scene.get_rigidbody(id2)).to equal(b2)
+    expect(scene.get_rigidbody(9999)).to be_nil
+  end
+
+  it 'calls update on every rigid body in update' do
     b1 = Rubidium::RigidBody2d.new(1.0, Rubidium::Vector2.new(0, 0), 0.0)
     b1.add_linear_force(Rubidium::Vector2.new(0, -10.0))
     b2 = Rubidium::RigidBody2d.new(1.0, Rubidium::Vector2.new(5, 0), 0.0)
     b2.add_linear_force(Rubidium::Vector2.new(2.0, 0))
 
     scene = described_class.new([b1, b2])
-    scene.Update(0.5)
+    scene.update(0.5)
 
     expect(b1.velocity.y).to be_within(1e-9).of(-5.0)
     expect(b1.position.y).to be_within(1e-9).of(-2.5)
@@ -180,7 +195,10 @@ RSpec.describe Rubidium::Scene2D do
 
     plain = Rubidium::RigidBody2d.new(1.0, Rubidium::Vector2.new(5, 5), 0.0)
 
-    scene = described_class.new([ground, ball, plain])
+    scene = described_class.new
+    ground_id = scene.create_rigidbody(ground)
+    ball_id = scene.create_rigidbody(ball)
+    plain_id = scene.create_rigidbody(plain)
 
     Tempfile.create(['scene', '.json']) do |file|
       scene.save(file.path)
@@ -189,7 +207,9 @@ RSpec.describe Rubidium::Scene2D do
       expect(loaded).to be_a(described_class)
       expect(loaded.rigid_bodies.size).to eq(3)
 
-      loaded_ground, loaded_ball, loaded_plain = loaded.rigid_bodies
+      loaded_ground = loaded.get_rigidbody(ground_id)
+      loaded_ball = loaded.get_rigidbody(ball_id)
+      loaded_plain = loaded.get_rigidbody(plain_id)
 
       expect(loaded_ground.mass).to eq(Float::INFINITY)
       expect(loaded_ground.static).to be(true)
@@ -217,10 +237,14 @@ RSpec.describe Rubidium::Scene2D do
       expect(loaded_ground.position).to eq(Rubidium::Vector2.new(0, -10))
       expect(loaded_ball.position.x).to be_within(1e-9).of(1.8)
 
-      # Verify instance-level load replaces rigid_bodies
+      # Verify instance-level load replaces rigid_bodies and advances next_id
       empty_scene = described_class.new
       empty_scene.load(file.path)
       expect(empty_scene.rigid_bodies.size).to eq(3)
+      extra = Rubidium::RigidBody2d.new(1.0, Rubidium::Vector2.new(0, 0), 0.0)
+      extra_id = empty_scene.create_rigidbody(extra)
+      expect([ground_id, ball_id, plain_id]).not_to include(extra_id)
+      expect(empty_scene.get_rigidbody(extra_id)).to equal(extra)
     end
   end
 end

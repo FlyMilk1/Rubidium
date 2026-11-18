@@ -21,8 +21,18 @@ module Rubidium
     def self.deserialize_scene(data)
       case data['type']
       when 'Scene2D'
-        bodies = (data['rigid_bodies'] || []).map { |entry| deserialize_rigid_body_2d(entry) }
-        Scene2D.new(bodies)
+        raw_bodies = data['rigid_bodies']
+        if raw_bodies.is_a?(Hash)
+          bodies = {}
+          raw_bodies.each do |id, entry|
+            key = id.is_a?(String) && id.match?(/\A-?\d+\z/) ? id.to_i : id
+            bodies[key] = deserialize_rigid_body_2d(entry)
+          end
+          Scene2D.new(bodies)
+        else
+          bodies = (raw_bodies || []).map { |entry| deserialize_rigid_body_2d(entry) }
+          Scene2D.new(bodies)
+        end
       else
         raise ArgumentError, "Unsupported scene type: #{data['type'].inspect}"
       end
