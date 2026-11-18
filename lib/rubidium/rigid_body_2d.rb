@@ -5,7 +5,7 @@ module Rubidium
   require_relative 'collider'
 
   class RigidBody2d
-    attr_accessor :mass, :velocity, :acceleration, :angular_velocity, :angular_acceleration, :position, :rotation, :drag, :collider
+    attr_accessor :mass, :velocity, :acceleration, :angular_velocity, :angular_acceleration, :position, :rotation, :drag, :static, :collider
 
     def initialize(mass, position, rotation, drag = 0.0, static = false)
       @mass = mass
@@ -43,7 +43,7 @@ module Rubidium
 
     def narrow_collision_check(other)
       if collider.respond_to?(:radius) && other.collider.respond_to?(:radius)
-        distance = Math.sqrt((position.x - other.position.x)**2 + (position.y - other.position.y)**2)
+        distance = Math.hypot(position.x - other.position.x, position.y - other.position.y)
         return distance < (collider.radius + other.collider.radius)
       elsif (collider.respond_to?(:radius) && other.collider.respond_to?(:width)) || (collider.respond_to?(:width) && other.collider.respond_to?(:radius))
         circle = collider.respond_to?(:radius) ? collider : other.collider
@@ -52,8 +52,8 @@ module Rubidium
         rect_pos = rect.equal?(collider) ? position : other.position
         dx = circle_pos.x - rect_pos.x
         dy = circle_pos.y - rect_pos.y
-        closest_x = [[dx, rect.width / 2].min, -rect.width / 2].max
-        closest_y = [[dy, rect.height / 2].min, -rect.height / 2].max
+        closest_x = dx.clamp(-rect.width / 2, rect.width / 2)
+        closest_y = dy.clamp(-rect.height / 2, rect.height / 2)
         distance_x = dx - closest_x
         distance_y = dy - closest_y
         distance_squared = distance_x**2 + distance_y**2
@@ -69,10 +69,10 @@ module Rubidium
     def get_collided_objects(spatial_hashmap)
       candidates = spatial_hashmap.get_broad_collided_objects(self)
       if candidates.any?
-        puts "Broad collision detected for #{object_id}: #{candidates.to_a.map(&:object_id).join(', ')}"
+        puts "Broad collision detected for #{object_id}: #{candidates.map(&:object_id).join(', ')}"
       end
 
-      narrow = candidates.to_a.select { |obj| narrow_collision_check(obj) }
+      narrow = candidates.select { |obj| narrow_collision_check(obj) }
       if narrow.any?
         puts "Narrow collision detected for #{object_id}: #{narrow.map(&:object_id).join(', ')}"
       end

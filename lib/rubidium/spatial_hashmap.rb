@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+require 'set'
+
 module Rubidium
-  require_relative 'hash_set'
   require_relative 'rigid_body_2d'
   require_relative 'collider'
   class SpatialHashmap
@@ -25,7 +26,7 @@ module Rubidium
     end
 
     def get_broad_collided_objects(object)
-      neighbors = HashSet.new
+      neighbors = Set.new
       cells = get_cells(object.position.x, object.position.y, object.collider)
       return neighbors unless cells
 

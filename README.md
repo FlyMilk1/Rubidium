@@ -11,7 +11,6 @@ spatial hashmap for broad-phase collision detection. No runtime dependencies.
   angular velocity, drag, linear forces, and `update(time_step)` integration
 - `Rubidium::Collision::CircleCollider` / `Rubidium::Collision::RectangleCollider`
 - `Rubidium::SpatialHashmap` — broad-phase collision lookup by grid cell
-- `Rubidium::HashSet` — minimal hash-backed set used internally
 
 ## Installation
 
@@ -66,7 +65,7 @@ ball.update(1.0 / 60.0)
 
 # Broad phase (grid cells) then narrow phase (per-collider check)
 candidates = grid.get_broad_collided_objects(ball)
-colliding = candidates.to_a.select { |other| ball.narrow_collision_check(other) }
+colliding = candidates.select { |other| ball.narrow_collision_check(other) }
 puts "colliding with #{colliding.size} object(s)"
 ```
 

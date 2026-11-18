@@ -17,5 +17,6 @@ Gem::Specification.new do |spec|
   spec.files         = Dir['lib/**/*.rb'] + %w[README.md LICENSE CHANGELOG.md]
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'oj', '~> 3.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
 end
