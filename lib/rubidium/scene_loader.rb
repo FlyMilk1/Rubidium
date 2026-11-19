@@ -45,7 +45,8 @@ module Rubidium
         deserialize_vector2(data['position']),
         deserialize_number(data['rotation']),
         deserialize_number(data['drag'] || 0.0),
-        data['static'] ? true : false
+        data['static'] ? true : false,
+        deserialize_number(data['bounciness'] || 0.0)
       )
       body.velocity = deserialize_vector2(data['velocity']) if data['velocity']
       body.acceleration = deserialize_vector2(data['acceleration']) if data['acceleration']

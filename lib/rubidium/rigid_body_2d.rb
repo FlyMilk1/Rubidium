@@ -3,11 +3,13 @@ module Rubidium
 
   require_relative 'vector2'
   require_relative 'collider'
+  require_relative 'collision_resolver'
 
   class RigidBody2d
     attr_accessor :mass, :velocity, :acceleration, :angular_velocity, :angular_acceleration, :position, :rotation, :drag, :static, :collider
+    attr_reader :bounciness
 
-    def initialize(mass, position, rotation, drag = 0.0, static = false)
+    def initialize(mass, position, rotation, drag = 0.0, static = false, bounciness = 0.0)
       @mass = mass
       @velocity = Vector2.new(0, 0)
       @acceleration = Vector2.new(0, 0)
@@ -18,6 +20,14 @@ module Rubidium
       @drag = drag
       @static = static
       @collider = nil
+      self.bounciness = bounciness
+    end
+
+    def bounciness=(value)
+      float_val = Float(value)
+      raise ArgumentError, 'bounciness cannot be NaN' if float_val.nan?
+
+      @bounciness = float_val.clamp(0.0, 1.0)
     end
 
     def update(time_step)
@@ -41,29 +51,21 @@ module Rubidium
       @acceleration.y += force.y / @mass
     end
 
+    def collision_manifold(other)
+      Collision::Resolver.compute_manifold(self, other)
+    end
+
     def narrow_collision_check(other)
-      if collider.respond_to?(:radius) && other.collider.respond_to?(:radius)
-        distance = Math.hypot(position.x - other.position.x, position.y - other.position.y)
-        return distance < (collider.radius + other.collider.radius)
-      elsif (collider.respond_to?(:radius) && other.collider.respond_to?(:width)) || (collider.respond_to?(:width) && other.collider.respond_to?(:radius))
-        circle = collider.respond_to?(:radius) ? collider : other.collider
-        rect = collider.respond_to?(:width) ? collider : other.collider
-        circle_pos = circle.equal?(collider) ? position : other.position
-        rect_pos = rect.equal?(collider) ? position : other.position
-        dx = circle_pos.x - rect_pos.x
-        dy = circle_pos.y - rect_pos.y
-        closest_x = dx.clamp(-rect.width / 2, rect.width / 2)
-        closest_y = dy.clamp(-rect.height / 2, rect.height / 2)
-        distance_x = dx - closest_x
-        distance_y = dy - closest_y
-        distance_squared = distance_x**2 + distance_y**2
-        return distance_squared < (circle.radius**2)
-      elsif collider.respond_to?(:width) && other.collider.respond_to?(:width)
-        return (position.x - other.position.x).abs < (collider.width / 2 + other.collider.width / 2) &&
-               (position.y - other.position.y).abs < (collider.height / 2 + other.collider.height / 2)
-      else
-        return false
-      end
+      !collision_manifold(other).nil?
+    end
+
+    def resolve_collision(other)
+      Collision::Resolver.resolve(self, other)
+    end
+
+    def resolve_collisions(spatial_hashmap)
+      candidates = spatial_hashmap.get_broad_collided_objects(self)
+      candidates.select { |obj| resolve_collision(obj) }
     end
 
     def get_collided_objects(spatial_hashmap)

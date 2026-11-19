@@ -186,6 +186,33 @@ module Rubidium
       @x /= scalar
       @y /= scalar
     end
+
+    # Returns the dot product of this vector and another.
+    #
+    # @param other [Vector2] the other vector
+    # @return [Numeric] the scalar dot product
+    def dot(other)
+      @x * other.x + @y * other.y
+    end
+
+    # Returns the Euclidean length (magnitude) of this vector.
+    #
+    # @return [Float] the magnitude of the vector
+    def magnitude
+      Math.hypot(@x, @y)
+    end
+
+    # Returns a unit vector pointing in the same direction as this vector.
+    #
+    # Returns a zero vector if this vector has zero magnitude.
+    #
+    # @return [Vector2] a new normalized vector
+    def normalize
+      mag = magnitude
+      return Vector2.new(0.0, 0.0) if mag == 0.0
+
+      Vector2.new(@x / mag, @y / mag)
+    end
   end
 
 end

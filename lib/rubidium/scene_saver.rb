@@ -45,6 +45,7 @@ module Rubidium
         'angular_acceleration' => serialize_number(body.angular_acceleration),
         'drag' => serialize_number(body.drag),
         'static' => body.static ? true : false,
+        'bounciness' => serialize_number(body.bounciness),
         'collider' => serialize_collider(body.collider)
       }
     end

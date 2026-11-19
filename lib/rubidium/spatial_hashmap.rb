@@ -64,8 +64,8 @@ module Rubidium
           end
         end
       elsif collider.respond_to?(:width) && collider.respond_to?(:height)
-        w = collider.width / 2
-        h = collider.height / 2
+        w = collider.width / 2.0
+        h = collider.height / 2.0
         min_cx = ((x - w) / @cell_size).floor
         max_cx = ((x + w) / @cell_size).floor
         min_cy = ((y - h) / @cell_size).floor

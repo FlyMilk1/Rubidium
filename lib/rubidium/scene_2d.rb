@@ -1,20 +1,24 @@
 # frozen_string_literal: true
 
 require_relative 'rigid_body_2d'
+require_relative 'spatial_hashmap'
+require_relative 'collision_resolver'
 
 module Rubidium
   # Manages a dictionary of 2D rigid bodies keyed by ID and steps them through
   # per-frame physics updates, with JSON save/load support.
   class Scene2D
-    attr_accessor :rigid_bodies
+    attr_accessor :rigid_bodies, :cell_size, :collision_iterations
 
     def self.load(file_path)
       SceneLoader.load(file_path)
     end
 
-    def initialize(rigid_bodies = {})
+    def initialize(rigid_bodies = {}, cell_size: nil, collision_iterations: Collision::Resolver::DEFAULT_ITERATIONS)
       @rigid_bodies = {}
       @next_id = 1
+      @cell_size = cell_size
+      @collision_iterations = collision_iterations
 
       if rigid_bodies.is_a?(Hash)
         @rigid_bodies = rigid_bodies.dup
@@ -52,11 +56,21 @@ module Rubidium
       SceneSaver.save(self, file_path)
     end
 
-    # Advances every rigid body in the scene by +time_step+ seconds.
+    # Advances every rigid body in the scene by +time_step+ seconds and resolves collisions.
     def update(time_step)
       @rigid_bodies.each_value do |body|
         body.update(time_step)
       end
+      resolve_collisions
+    end
+
+    # Detects and resolves all overlapping collisions across the scene's rigid bodies.
+    def resolve_collisions
+      Collision::Resolver.resolve_all(
+        @rigid_bodies.values,
+        cell_size: @cell_size,
+        iterations: @collision_iterations
+      )
     end
   end
 end
